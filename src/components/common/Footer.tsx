@@ -45,7 +45,7 @@ export const Footer: React.FC = () => {
             Images, posters, artwork, titles, and related media belong to their respective owners and are used here for identification and commentary purposes.
           </p>
           <p>
-            © {new Date().getFullYear()} Emanuel. Frontend rebuilt with modern React & TypeScript.
+            © {new Date().getFullYear()} Sai Kiran. Data provided by <a href='https://emanuels.review/'>Emanuel's Review</a>
           </p>
         </div>
       </div>
