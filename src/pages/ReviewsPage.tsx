@@ -89,39 +89,26 @@ export const ReviewsPage: React.FC = () => {
       </div>
 
       {/* Filter and Control Bar */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          padding: '1rem 1.25rem',
-          background: 'var(--bg-surface-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border-subtle)',
-          marginBottom: '2rem',
-        }}
-      >
+      <div className="reviews-filter-bar">
         {/* Media type pills */}
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className="reviews-type-pills">
           <button
             className={`btn ${filterType === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
+            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
             onClick={() => setFilterType('all')}
           >
             All ({reviews.length})
           </button>
           <button
             className={`btn ${filterType === 'film' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
+            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
             onClick={() => setFilterType('film')}
           >
             Films ({reviews.filter((r) => r.type === 'film').length})
           </button>
           <button
             className={`btn ${filterType === 'tv' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
+            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
             onClick={() => setFilterType('tv')}
           >
             TV Series ({reviews.filter((r) => r.type === 'tv').length})
@@ -129,14 +116,15 @@ export const ReviewsPage: React.FC = () => {
         </div>
 
         {/* Dropdown controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <div className="reviews-dropdown-controls">
           {/* Decade filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
             <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Decade:</span>
             <select
               value={selectedDecade}
               onChange={(e) => setSelectedDecade(e.target.value)}
               style={{
+                width: '100%',
                 background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-md)',
@@ -157,13 +145,14 @@ export const ReviewsPage: React.FC = () => {
           </div>
 
           {/* Sort By */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
             <ArrowUpDown size={15} color="var(--text-muted)" />
             <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Sort:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
               style={{
+                width: '100%',
                 background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-md)',

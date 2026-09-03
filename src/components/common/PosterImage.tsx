@@ -49,7 +49,7 @@ export const PosterImage: React.FC<PosterImageProps> = ({
       onError={() => setHasError(true)}
       style={{
         opacity: isLoaded ? 1 : 0.4,
-        transition: 'opacity 0.3s ease',
+        transition: 'opacity 0.3s ease, transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)',
       }}
     />
   );

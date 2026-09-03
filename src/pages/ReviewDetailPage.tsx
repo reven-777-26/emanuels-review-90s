@@ -174,7 +174,7 @@ export const ReviewDetailPage: React.FC = () => {
             <article className="review-article-card">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-accent-gold)' }}>
-                  The Official Review
+                  Emanuel's Review
                 </span>
               </div>
               <div className="review-text">{review.review}</div>

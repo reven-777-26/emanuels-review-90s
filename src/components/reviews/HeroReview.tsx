@@ -9,8 +9,21 @@ interface HeroReviewProps {
 
 export const HeroReview: React.FC<HeroReviewProps> = ({ reviews }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   const items = reviews.filter(Boolean);
+
+  // Auto slide smoothly every 3 seconds
+  React.useEffect(() => {
+    if (items.length <= 1 || isPaused) return;
+
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % items.length);
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [items.length, isPaused]);
+
   if (items.length === 0) return null;
 
   const handlePrev = (e: React.MouseEvent) => {
@@ -26,7 +39,12 @@ export const HeroReview: React.FC<HeroReviewProps> = ({ reviews }) => {
   };
 
   return (
-    <section className="hero-viewport" aria-label="Featured Reviews">
+    <section
+      className="hero-viewport"
+      aria-label="Featured Reviews"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       {/* Track that slides smoothly via transform */}
       <div
         className="hero-track"

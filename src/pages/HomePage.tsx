@@ -46,7 +46,7 @@ export const HomePage: React.FC = () => {
     );
   }
 
-  // Derive Best of Film and TV dynamically
+  // Derive Best of Film and TV dynamically (6 items each for a balanced grid)
   const bestOfFilm = [...reviews]
     .filter((r) => r.type === 'film')
     .sort((a, b) => b.score - a.score)
@@ -66,49 +66,46 @@ export const HomePage: React.FC = () => {
   const lowestEver = sortedAll[sortedAll.length - 1];
 
   return (
-    <div className="container fade-in">
+    <div className="container fade-in" style={{ paddingTop: '2rem' }}>
       {/* Dynamic Sliding Hero Carousel */}
       {featuredList.length > 0 && <HeroReview reviews={featuredList} />}
 
-      {/* Clean Minimal Overview Strip */}
+      {/* Overview Stats Strip */}
       <div className="overview-metric-strip">
-        <div className="metric-item">
+        <Link to="/reviews" className="metric-item">
           <span className="metric-number">{reviews.length}</span>
           <span className="metric-text">Total Reviews</span>
-        </div>
+        </Link>
 
-        <div className="metric-divider" />
-
-        <div className="metric-item">
+        <Link to="/reviews" className="metric-item">
           <span className="metric-number">{reviews.filter((r) => r.type === 'film').length}</span>
           <span className="metric-text">Feature Films</span>
-        </div>
+        </Link>
 
-        <div className="metric-divider" />
-
-        <div className="metric-item">
+        <Link to="/reviews" className="metric-item">
           <span className="metric-number">{reviews.filter((r) => r.type === 'tv').length}</span>
           <span className="metric-text">TV Series</span>
-        </div>
+        </Link>
 
-        <div className="metric-divider" />
-
-        <div className="metric-item">
-          <span className="metric-number text-gold">
-            {(reviews.reduce((acc, r) => acc + r.score, 0) / reviews.length).toFixed(2)}
-          </span>
-          <span className="metric-text">Avg Rating / 5</span>
-        </div>
+        <Link to="/stats" className="metric-item">
+          <div className="metric-rating-wrapper">
+            <span className="metric-number text-gold">
+              {(reviews.reduce((acc, r) => acc + r.score, 0) / reviews.length).toFixed(2)}
+            </span>
+            <span className="metric-star-icon">★</span>
+          </div>
+          <span className="metric-text">Average Rating</span>
+        </Link>
       </div>
 
       {/* Latest Reviews Section */}
       <section style={{ marginBottom: '3.5rem' }}>
         <div className="section-header">
-          <div>
+          <div className="section-header-info">
             <h2 className="section-title">Latest Reviews</h2>
             <p className="section-subtitle">Freshly added entries evaluated with Emanuel's precision matrix</p>
           </div>
-          <Link to="/reviews" className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
+          <Link to="/reviews" className="btn btn-secondary section-view-all">
             <span>View All</span>
             <ArrowRight size={14} />
           </Link>
@@ -180,7 +177,7 @@ export const HomePage: React.FC = () => {
                   alt={highestEver.name}
                   className="extreme-poster-thumb"
                 />
-                <div>
+                <div className="extreme-info">
                   <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-accent-gold)', letterSpacing: '0.08em', marginBottom: '0.35rem' }}>
                     Highest Score Ever
                   </div>
@@ -207,7 +204,7 @@ export const HomePage: React.FC = () => {
                   alt={lowestEver.name}
                   className="extreme-poster-thumb"
                 />
-                <div>
+                <div className="extreme-info">
                   <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-accent-red)', letterSpacing: '0.08em', marginBottom: '0.35rem' }}>
                     Lowest Score Ever
                   </div>
