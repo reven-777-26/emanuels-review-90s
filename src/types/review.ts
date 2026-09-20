@@ -68,7 +68,7 @@ export interface ReviewDetail {
   imdb: ReviewImdb;
   artwork: ReviewArtwork;
   credits: ReviewCredits;
-  review: string;
+  review: string | null;
   score: number;
   scores: CategoryScores;
   watchedAt?: string;

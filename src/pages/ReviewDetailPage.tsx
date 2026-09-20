@@ -1,47 +1,49 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, User, Clapperboard, Music, ExternalLink, ArrowLeft, Star, Clock } from 'lucide-react';
 import { useReviewDetail } from '../hooks/useReviewDetail';
 import { useReviews } from '../hooks/useReviews';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorDisplay } from '../components/common/ErrorDisplay';
 import { PosterImage } from '../components/common/PosterImage';
 import { RatingBreakdown } from '../components/reviews/RatingBreakdown';
-import { ReviewCard } from '../components/reviews/ReviewCard';
+import { renderStars } from '../utils/format';
 
-export const ReviewDetailPage: React.FC = () => {
+interface ReviewDetailPageProps {
+  reviewId?: string;
+  isRandomPick?: boolean;
+  onPickAnother?: () => void;
+}
+
+export const ReviewDetailPage: React.FC<ReviewDetailPageProps> = ({
+  reviewId: propReviewId,
+  isRandomPick = false,
+  onPickAnother,
+}) => {
   const params = useParams<{ id: string }>();
-  // Support both /reviews/:id and direct path matching
-  const id = params.id || (typeof window !== 'undefined' ? window.location.pathname.replace(/^\//, '') : '');
+  const id = propReviewId || params.id || (typeof window !== 'undefined' ? window.location.pathname.replace(/^\//, '') : '');
   const { review, loading, error } = useReviewDetail(id);
   const { reviews } = useReviews();
 
   if (loading) {
-    return (
-      <div className="container" style={{ paddingTop: '5rem' }}>
-        <LoadingSpinner message="Fetching review details from API..." />
-      </div>
-    );
+    return <LoadingSpinner message="Retrieving film review and score data from archive..." />;
   }
 
   if (error || !review) {
     return (
-      <div className="container" style={{ paddingTop: '5rem' }}>
+      <div style={{ padding: '12px 0' }}>
         <ErrorDisplay
-          title="Review Not Found"
-          message={error || `Could not find a review for ID "${id}".`}
+          title="Review Record Not Located"
+          message={error || `Could not find a review matching identifier "${id}".`}
         />
-        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-          <Link to="/reviews" className="btn btn-secondary">
-            <ArrowLeft size={16} />
-            <span>Return to Catalog</span>
+        <div style={{ marginTop: '10px', textAlign: 'center' }}>
+          <Link to="/reviews" className="btn-retro">
+            &lt;&lt; Return to Review Directory
           </Link>
         </div>
       </div>
     );
   }
 
-  // Format dates safely
   const formattedWatched = review.watchedAt
     ? new Date(review.watchedAt).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -58,213 +60,239 @@ export const ReviewDetailPage: React.FC = () => {
       })
     : null;
 
-  // Recommendations: Other reviews of the same type or similar rating
   const relatedReviews = reviews
     .filter((r) => r.id !== review.id && r.type === review.type)
     .slice(0, 4);
 
   return (
-    <div className="fade-in">
-      {/* Cinematic Hero Header */}
-      <div className="detail-hero-section">
-        {review.artwork?.pageArt && (
-          <img
-            src={review.artwork.pageArt}
-            alt={`${review.name} banner artwork`}
-            className="detail-pageart-backdrop"
-          />
-        )}
-        <div className="detail-backdrop-gradient" />
-
-        <div className="container" style={{ width: '100%' }}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <Link
-              to="/reviews"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                color: 'var(--text-secondary)',
-                fontSize: '0.9rem',
-                padding: '0.4rem 0.8rem',
-                borderRadius: 'var(--radius-md)',
-                background: 'rgba(0, 0, 0, 0.4)',
-                backdropFilter: 'blur(8px)',
-              }}
-            >
-              <ArrowLeft size={14} />
-              <span>Back to all reviews</span>
-            </Link>
-          </div>
-
-          <div className="detail-header-grid">
-            <PosterImage
-              src={review.artwork?.poster}
-              alt={review.name}
-              className="detail-poster-img"
-              loading="eager"
-            />
-
+    <div className="detail-page-wrapper">
+      {/* Random Pick Alert Banner */}
+      {isRandomPick && (
+        <div className="retro-random-banner">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
             <div>
-              <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <span className={`badge ${review.type === 'tv' ? 'badge-tv' : 'badge-film'}`}>
-                  {review.type === 'tv' ? 'Television Series' : 'Feature Film'}
-                </span>
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{review.year}</span>
-              </div>
-
-              <h1 className="detail-title">{review.name}</h1>
-
-              {/* Score Display */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', margin: '1rem 0 1.5rem 0', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(245, 158, 11, 0.15)', padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-pill)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                  <Star size={24} fill="var(--color-accent-amber)" color="var(--color-accent-amber)" />
-                  <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-accent-amber)', lineHeight: 1 }}>
-                    {review.score.toFixed(2)}
-                  </span>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>/ 5.00</span>
-                </div>
-
-                {review.imdb?.url && (
-                  <a
-                    href={review.imdb.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-secondary"
-                    style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
-                  >
-                    <span>View on IMDb</span>
-                    <ExternalLink size={14} />
-                  </a>
-                )}
-              </div>
-
-              {/* Quick info row */}
-              <div className="detail-meta-row">
-                {review.credits?.directors && review.credits.directors.length > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Clapperboard size={15} color="var(--text-muted)" />
-                    <span>Directed by <strong>{review.credits.directors.join(', ')}</strong></span>
-                  </div>
-                )}
-                {formattedWatched && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Clock size={15} color="var(--text-muted)" />
-                    <span>Watched: {formattedWatched}</span>
-                  </div>
-                )}
-                {formattedReviewed && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Calendar size={15} color="var(--text-muted)" />
-                    <span>Reviewed: {formattedReviewed}</span>
-                  </div>
-                )}
-              </div>
+              <span style={{ marginRight: '6px' }}>&#9860;</span>
+              <strong>RANDOM REEL VAULT PICK:</strong> You have been randomly directed to this archive evaluation!
             </div>
+            {onPickAnother && (
+              <button
+                type="button"
+                onClick={onPickAnother}
+                className="btn-retro btn-retro-gold"
+                style={{ cursor: 'pointer', padding: '2px 8px' }}
+              >
+                [ Spin Again / Pick Another &gt;&gt; ]
+              </button>
+            )}
           </div>
+        </div>
+      )}
+
+      {/* Navigation Breadcrumb */}
+      <div className="detail-nav-back">
+        <Link to="/">&lt;&lt; Home</Link> &bull;{' '}
+        <Link to="/reviews">Review Directory</Link> &bull;{' '}
+        <span>{review.name}</span>
+      </div>
+
+      {/* Main Title Banner */}
+      <div className="detail-title-banner">
+        <h1 className="detail-title-h1">
+          {review.name.toUpperCase()} ({review.year})
+        </h1>
+        <div className="detail-title-sub">
+          Format: {review.type === 'tv' ? 'Television Series' : 'Feature Film'} &bull;
+          Review Archive ID: #{review.id}
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="container">
-        <div className="detail-content-layout">
-          {/* Left Column: Written Review + Rating Breakdown */}
-          <div>
-            {/* Written Review */}
-            <article className="review-article-card">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-accent-gold)' }}>
-                  Emanuel's Review
-                </span>
-              </div>
-              <div className="review-text">{review.review}</div>
-            </article>
-
-            {/* Subcategory Scoring Matrix */}
-            {review.scores && <RatingBreakdown scores={review.scores} />}
+      {/* Top 2-Column Summary Table: Poster + Specifications */}
+      <div className="detail-top-grid">
+        <div className="detail-poster-cell">
+          <PosterImage
+            src={review.artwork?.poster}
+            alt={`${review.name} poster`}
+            className="detail-main-poster"
+            loading="eager"
+          />
+          <div style={{ fontSize: '9px', color: '#666', marginTop: '3px' }}>
+            Official Promotional Poster
           </div>
-
-          {/* Right Column: Metadata Sidebar */}
-          <aside className="detail-sidebar">
-            {/* IMDb Synopsis box */}
-            {review.imdb?.description && (
-              <div className="sidebar-box">
-                <div className="sidebar-title">Synopsis</div>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                  {review.imdb.description}
-                </p>
-              </div>
-            )}
-
-            {/* Directors */}
-            {review.credits?.directors && review.credits.directors.length > 0 && (
-              <div className="sidebar-box">
-                <div className="sidebar-title">
-                  <Clapperboard size={15} />
-                  <span>Directing</span>
-                </div>
-                <div className="credits-tag-list">
-                  {review.credits.directors.map((dir, i) => (
-                    <Link key={i} to={`/search?q=director:${encodeURIComponent(dir)}`} className="credit-tag">
-                      {dir}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Actors / Cast */}
-            {review.credits?.actors && review.credits.actors.length > 0 && (
-              <div className="sidebar-box">
-                <div className="sidebar-title">
-                  <User size={15} />
-                  <span>Featured Cast</span>
-                </div>
-                <div className="credits-tag-list">
-                  {review.credits.actors.map((actor, i) => (
-                    <Link key={i} to={`/search?q=actor:${encodeURIComponent(actor)}`} className="credit-tag">
-                      {actor}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Composers / Music */}
-            {review.credits?.composers && review.credits.composers.length > 0 && (
-              <div className="sidebar-box">
-                <div className="sidebar-title">
-                  <Music size={15} />
-                  <span>Score & Music</span>
-                </div>
-                <div className="credits-tag-list">
-                  {review.credits.composers.map((composer, i) => (
-                    <Link key={i} to={`/search?q=${encodeURIComponent(composer)}`} className="credit-tag">
-                      {composer}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </aside>
         </div>
 
-        {/* More Like This Strip */}
-        {relatedReviews.length > 0 && (
-          <section style={{ marginTop: '4rem', marginBottom: '2rem' }}>
-            <div className="section-header">
-              <div>
-                <h3 className="section-title">More {review.type === 'tv' ? 'Television' : 'Film'} Reviews</h3>
-                <p className="section-subtitle">Continue exploring other entries from Emanuel's archive</p>
-              </div>
+        <table className="detail-meta-table">
+          <tbody>
+            <tr>
+              <td className="detail-meta-label">Overall Rating:</td>
+              <td>
+                <span className="retro-stars" style={{ fontSize: '13px' }}>
+                  {renderStars(review.score)}
+                </span>{' '}
+                <strong style={{ color: '#800000', fontSize: '13px' }}>
+                  {review.score.toFixed(2)}
+                </strong>{' '}
+                out of 5.00
+              </td>
+            </tr>
+            <tr>
+              <td className="detail-meta-label">Release Year:</td>
+              <td>{review.year}</td>
+            </tr>
+            <tr>
+              <td className="detail-meta-label">Media Format:</td>
+              <td>{review.type === 'tv' ? 'Television Series' : 'Theatrical Feature Film'}</td>
+            </tr>
+            {review.credits?.directors && review.credits.directors.length > 0 && (
+              <tr>
+                <td className="detail-meta-label">Directed By:</td>
+                <td>
+                  {review.credits.directors.map((dir, i) => (
+                    <React.Fragment key={i}>
+                      {i > 0 && ', '}
+                      <Link to={`/search?q=director:${encodeURIComponent(dir)}`}>
+                        {dir}
+                      </Link>
+                    </React.Fragment>
+                  ))}
+                </td>
+              </tr>
+            )}
+            {review.credits?.actors && review.credits.actors.length > 0 && (
+              <tr>
+                <td className="detail-meta-label">Featured Cast:</td>
+                <td>
+                  {review.credits.actors.map((actor, i) => (
+                    <React.Fragment key={i}>
+                      {i > 0 && ', '}
+                      <Link to={`/search?q=actor:${encodeURIComponent(actor)}`}>
+                        {actor}
+                      </Link>
+                    </React.Fragment>
+                  ))}
+                </td>
+              </tr>
+            )}
+            {review.credits?.composers && review.credits.composers.length > 0 && (
+              <tr>
+                <td className="detail-meta-label">Music / Score:</td>
+                <td>
+                  {review.credits.composers.map((composer, i) => (
+                    <React.Fragment key={i}>
+                      {i > 0 && ', '}
+                      <Link to={`/search?q=${encodeURIComponent(composer)}`}>
+                        {composer}
+                      </Link>
+                    </React.Fragment>
+                  ))}
+                </td>
+              </tr>
+            )}
+            {formattedWatched && (
+              <tr>
+                <td className="detail-meta-label">Date Screened:</td>
+                <td>{formattedWatched}</td>
+              </tr>
+            )}
+            {formattedReviewed && (
+              <tr>
+                <td className="detail-meta-label">Date Reviewed:</td>
+                <td>{formattedReviewed}</td>
+              </tr>
+            )}
+            {review.imdb?.url && (
+              <tr>
+                <td className="detail-meta-label">Internet Link:</td>
+                <td>
+                  <a href={review.imdb.url} target="_blank" rel="noopener noreferrer">
+                    View Title Entry on IMDb.com &gt;&gt;
+                  </a>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Synopsis Panel (Pale Yellow Highlight Box) */}
+      {review.imdb?.description && (
+        <div className="detail-synopsis-box">
+          <div className="detail-synopsis-title">PLOT SYNOPSIS:</div>
+          <div>{review.imdb.description}</div>
+        </div>
+      )}
+
+      {/* Main Editorial Review Section */}
+      <article className="detail-review-article">
+        <div className="detail-review-header">
+          EMANUEL'S CRITICAL ASSESSMENT
+        </div>
+        <div className="detail-review-body">
+          {review.review ? (
+            review.review.split('\n\n').map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))
+          ) : (
+            <div className="retro-review-prose-pending">
+              <p>
+                <strong>Editorial Note:</strong> Written prose commentary has not yet been logged for this database entry.
+              </p>
+              <p>
+                However, Emanuel&apos;s complete 8-pillar mathematical evaluation and criteria breakdown are recorded in the score matrix below.
+              </p>
             </div>
-            <div className="reviews-grid">
-              {relatedReviews.map((r) => (
-                <ReviewCard key={r.id} review={r} />
-              ))}
-            </div>
-          </section>
-        )}
+          )}
+        </div>
+      </article>
+
+      {/* Scoring Matrix Section */}
+      {review.scores && <RatingBreakdown scores={review.scores} />}
+
+      {/* Related Titles Section (Amazon 1999 "Customers who bought this also bought...") */}
+      {relatedReviews.length > 0 && (
+        <div className="detail-related-section">
+          <div className="detail-related-header">
+            MORE {review.type === 'tv' ? 'TELEVISION' : 'FILM'} CRITICISM YOU MAY BE INTERESTED IN
+          </div>
+          <div className="detail-related-body">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+              <tbody>
+                {relatedReviews.map((r) => (
+                  <tr key={r.id} style={{ borderBottom: '1px dotted #ccc' }}>
+                    <td style={{ width: '45px', padding: '4px 0' }}>
+                      <Link to={`/reviews/${r.id}`}>
+                        <PosterImage
+                          src={r.poster}
+                          alt={r.name}
+                          style={{ width: '38px', border: '1px solid #000' }}
+                        />
+                      </Link>
+                    </td>
+                    <td style={{ padding: '4px 8px', verticalAlign: 'middle' }}>
+                      <Link to={`/reviews/${r.id}`} style={{ fontWeight: 'bold' }}>
+                        {r.name}
+                      </Link>{' '}
+                      ({r.year}) &bull; Score:{' '}
+                      <span style={{ color: '#800000', fontWeight: 'bold' }}>
+                        {r.score.toFixed(2)} / 5.00
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'right', padding: '4px 0', verticalAlign: 'middle' }}>
+                      <Link to={`/reviews/${r.id}`}>[ Read Review ]</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Navigation */}
+      <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '11px' }}>
+        <Link to="/reviews">&lt;&lt; Return to All Reviews</Link> |{' '}
+        <a href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }}>
+          Top of Page &uarr;
+        </a>
       </div>
     </div>
   );

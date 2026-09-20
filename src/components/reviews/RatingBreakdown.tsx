@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Layers, CheckCircle2 } from 'lucide-react';
 import type { CategoryScores, CategoryScoreGroup } from '../../types/review';
 
 interface RatingBreakdownProps {
@@ -7,15 +6,17 @@ interface RatingBreakdownProps {
 }
 
 export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({ scores }) => {
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   if (!scores) return null;
 
   const toggleCategory = (key: string) => {
-    setExpandedCategory((prev) => (prev === key ? null : key));
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
-  // Convert category scores dictionary to array with calculated category averages
   const scoreEntries = Object.entries(scores).map(([key, group]: [string, CategoryScoreGroup]) => {
     const subCats = Object.values(group.categories || {});
     const count = subCats.length;
@@ -24,78 +25,93 @@ export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({ scores }) => {
       key,
       name: group.name || key,
       average: avg,
-      percentage: (avg / 5) * 100,
+      percentage: Math.round((avg / 5) * 100),
       subcategories: subCats,
     };
   });
 
   return (
-    <div className="score-matrix-card">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <h3 style={{ fontSize: '1.3rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Layers size={20} color="var(--color-accent-gold)" />
-          <span>Precision Score Breakdown</span>
-        </h3>
-        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          Click category to inspect sub-scores
-        </span>
+    <div className="retro-matrix-wrapper">
+      <div className="retro-matrix-header">
+        <strong>EMANUEL'S GRANULAR SCORING MATRIX</strong>
+      </div>
+      <div className="retro-matrix-sub">
+        Calculated using Emanuel's weighted multi-tier evaluation system (Scores calibrated from 1.00 to 5.00)
       </div>
 
-      <div className="categories-container">
-        {scoreEntries.map((cat) => {
-          const isExpanded = expandedCategory === cat.key;
-          return (
-            <div key={cat.key} className="category-row">
-              <div
-                className="category-row-header"
-                onClick={() => toggleCategory(cat.key)}
-                role="button"
-                tabIndex={0}
-                aria-expanded={isExpanded}
-              >
-                <div className="category-name">
-                  <span>{cat.name}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    ({cat.subcategories.length} criteria)
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div className="category-score-val">{cat.average.toFixed(2)}</div>
-                  {isExpanded ? (
-                    <ChevronUp size={16} color="var(--text-muted)" />
-                  ) : (
-                    <ChevronDown size={16} color="var(--text-muted)" />
-                  )}
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="category-progress-bar">
-                <div
-                  className="category-progress-fill"
-                  style={{ width: `${cat.percentage}%` }}
-                />
-              </div>
-
-              {/* Collapsible Subcategories */}
-              {isExpanded && (
-                <div className="subcategories-list">
-                  {cat.subcategories.map((sub, idx) => (
-                    <div key={idx} className="subcategory-item">
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <CheckCircle2 size={12} color="var(--color-accent-gold)" />
-                        <span>{sub.name}</span>
-                      </span>
-                      <span className="subcategory-score">{sub.score} / 5</span>
+      <table className="retro-matrix-table">
+        <thead>
+          <tr>
+            <th style={{ width: '28%' }}>CATEGORY</th>
+            <th style={{ width: '18%', textAlign: 'center' }}>SCORE</th>
+            <th style={{ width: '38%' }}>SCORE BAR</th>
+            <th style={{ width: '16%', textAlign: 'center' }}>DETAILS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {scoreEntries.map((cat) => {
+            const isExpanded = !!expandedCategories[cat.key];
+            return (
+              <React.Fragment key={cat.key}>
+                <tr className="category-main-row">
+                  <td className="category-name-cell">
+                    <strong>{cat.name.toUpperCase()}</strong>
+                    <div className="category-count-hint">
+                      ({cat.subcategories.length} sub-criteria evaluated)
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                  </td>
+                  <td className="category-score-cell">
+                    <strong>{cat.average.toFixed(2)}</strong> / 5.00
+                  </td>
+                  <td className="category-bar-cell">
+                    <div className="retro-bar-container" title={`${cat.percentage}%`}>
+                      <div
+                        className="retro-bar-fill"
+                        style={{ width: `${cat.percentage}%` }}
+                      />
+                    </div>
+                    <span className="retro-bar-pct">{cat.percentage}%</span>
+                  </td>
+                  <td className="category-toggle-cell">
+                    <button
+                      type="button"
+                      onClick={() => toggleCategory(cat.key)}
+                      className="btn-retro matrix-toggle-btn"
+                    >
+                      {isExpanded ? '[-] Hide' : '[+] Inspect'}
+                    </button>
+                  </td>
+                </tr>
+
+                {/* Expanded Subcategories Sub-Table */}
+                {isExpanded && (
+                  <tr className="category-sub-row">
+                    <td colSpan={4}>
+                      <div className="subcriteria-panel">
+                        <div className="subcriteria-title">
+                          Specific Scores for {cat.name}:
+                        </div>
+                        <table className="subcriteria-table">
+                          <tbody>
+                            {cat.subcategories.map((sub, idx) => (
+                              <tr key={idx}>
+                                <td className="sub-name">&bull; {sub.name}:</td>
+                                <td className="sub-score">
+                                  <strong>{sub.score}</strong> / 5.0
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { ArrowUpDown } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useReviews } from '../hooks/useReviews';
 import { ReviewCard } from '../components/reviews/ReviewCard';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -11,9 +11,22 @@ type SortOption = 'highest' | 'lowest' | 'recent' | 'oldest' | 'title';
 
 export const ReviewsPage: React.FC = () => {
   const { reviews, loading, error, refetch } = useReviews();
-  const [filterType, setFilterType] = useState<MediaType | 'all'>('all');
-  const [sortBy, setSortBy] = useState<SortOption>('highest');
-  const [selectedDecade, setSelectedDecade] = useState<string>('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const typeParam = (searchParams.get('type') as MediaType | 'all') || 'all';
+  const sortParam = (searchParams.get('sort') as SortOption) || 'highest';
+  const decadeParam = searchParams.get('decade') || 'all';
+
+  const [filterType, setFilterType] = useState<MediaType | 'all'>(typeParam);
+  const [sortBy, setSortBy] = useState<SortOption>(sortParam);
+  const [selectedDecade, setSelectedDecade] = useState<string>(decadeParam);
+
+  // Sync state if URL query params change
+  useEffect(() => {
+    if (typeParam !== filterType) setFilterType(typeParam);
+    if (sortParam !== sortBy) setSortBy(sortParam);
+    if (decadeParam !== selectedDecade) setSelectedDecade(decadeParam);
+  }, [typeParam, sortParam, decadeParam]);
 
   // Extract available decades
   const decades = useMemo(() => {
@@ -24,6 +37,18 @@ export const ReviewsPage: React.FC = () => {
     });
     return Array.from(set).sort((a, b) => parseInt(b) - parseInt(a));
   }, [reviews]);
+
+  const updateFilters = (type: MediaType | 'all', decade: string, sort: SortOption) => {
+    setFilterType(type);
+    setSelectedDecade(decade);
+    setSortBy(sort);
+
+    const newParams: Record<string, string> = {};
+    if (type !== 'all') newParams.type = type;
+    if (decade !== 'all') newParams.decade = decade;
+    if (sort !== 'highest') newParams.sort = sort;
+    setSearchParams(newParams);
+  };
 
   const filteredAndSortedReviews = useMemo(() => {
     let result = [...reviews];
@@ -61,136 +86,99 @@ export const ReviewsPage: React.FC = () => {
   }, [reviews, filterType, selectedDecade, sortBy]);
 
   if (loading) {
-    return (
-      <div className="container" style={{ paddingTop: '3rem' }}>
-        <LoadingSpinner message="Loading catalog..." />
-      </div>
-    );
+    return <LoadingSpinner message="Querying review database index..." />;
   }
 
   if (error) {
-    return (
-      <div className="container" style={{ paddingTop: '3rem' }}>
-        <ErrorDisplay title="Failed to load catalog" message={error} onRetry={refetch} />
-      </div>
-    );
+    return <ErrorDisplay title="Failed to load review archive" message={error} onRetry={refetch} />;
   }
 
   return (
-    <div className="container fade-in" style={{ paddingTop: '1.5rem' }}>
-      {/* Page Title */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>
-          All Reviews
+    <div className="retro-reviews-page">
+      {/* Page Heading */}
+      <div style={{ marginBottom: '8px' }}>
+        <h1 style={{ fontSize: '18px', color: '#003366', margin: '0 0 2px 0' }}>
+          COMPLETE REVIEW ARCHIVE
         </h1>
-        <p style={{ color: 'var(--text-secondary)' }}>
-          Browse through {reviews.length} meticulously scored motion pictures and television series.
-        </p>
+        <div style={{ fontSize: '11px', color: '#555' }}>
+          Browse all {reviews.length} film and television evaluations cataloged with Emanuel's precision score matrix.
+        </div>
       </div>
 
-      {/* Filter and Control Bar */}
-      <div className="reviews-filter-bar">
-        {/* Media type pills */}
-        <div className="reviews-type-pills">
-          <button
-            className={`btn ${filterType === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
-            onClick={() => setFilterType('all')}
-          >
-            All ({reviews.length})
-          </button>
-          <button
-            className={`btn ${filterType === 'film' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
-            onClick={() => setFilterType('film')}
-          >
-            Films ({reviews.filter((r) => r.type === 'film').length})
-          </button>
-          <button
-            className={`btn ${filterType === 'tv' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
-            onClick={() => setFilterType('tv')}
-          >
-            TV Series ({reviews.filter((r) => r.type === 'tv').length})
-          </button>
-        </div>
+      {/* Authentic 90s Filter & Sorting Form */}
+      <div className="retro-filter-panel">
+        <div className="filter-row">
+          <div className="filter-group">
+            <label>Format:</label>
+            <select
+              value={filterType}
+              onChange={(e) => updateFilters(e.target.value as MediaType | 'all', selectedDecade, sortBy)}
+            >
+              <option value="all">All Formats ({reviews.length})</option>
+              <option value="film">Feature Films Only ({reviews.filter((r) => r.type === 'film').length})</option>
+              <option value="tv">Television Series Only ({reviews.filter((r) => r.type === 'tv').length})</option>
+            </select>
+          </div>
 
-        {/* Dropdown controls */}
-        <div className="reviews-dropdown-controls">
-          {/* Decade filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
-            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Decade:</span>
+          <div className="filter-group">
+            <label>Decade:</label>
             <select
               value={selectedDecade}
-              onChange={(e) => setSelectedDecade(e.target.value)}
-              style={{
-                width: '100%',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-md)',
-                padding: '0.45rem 0.8rem',
-                fontSize: '0.85rem',
-                color: '#fff',
-                cursor: 'pointer',
-                outline: 'none',
-              }}
+              onChange={(e) => updateFilters(filterType, e.target.value, sortBy)}
             >
-              <option value="all" style={{ background: '#121620' }}>All Decades</option>
+              <option value="all">All Decades</option>
               {decades.map((dec) => (
-                <option key={dec} value={dec} style={{ background: '#121620' }}>
-                  {dec}
+                <option key={dec} value={dec}>
+                  {dec} Releases
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Sort By */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
-            <ArrowUpDown size={15} color="var(--text-muted)" />
-            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Sort:</span>
+          <div className="filter-group">
+            <label>Sort By:</label>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              style={{
-                width: '100%',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-md)',
-                padding: '0.45rem 0.8rem',
-                fontSize: '0.85rem',
-                color: '#fff',
-                cursor: 'pointer',
-                outline: 'none',
-              }}
+              onChange={(e) => updateFilters(filterType, selectedDecade, e.target.value as SortOption)}
             >
-              <option value="highest" style={{ background: '#121620' }}>Highest Rated</option>
-              <option value="lowest" style={{ background: '#121620' }}>Lowest Rated</option>
-              <option value="recent" style={{ background: '#121620' }}>Recently Reviewed</option>
-              <option value="oldest" style={{ background: '#121620' }}>Earliest Reviewed</option>
-              <option value="title" style={{ background: '#121620' }}>Alphabetical (A-Z)</option>
+              <option value="highest">Highest Score First</option>
+              <option value="lowest">Lowest Score (Razzies First)</option>
+              <option value="recent">Most Recently Reviewed</option>
+              <option value="oldest">Oldest Reviews First</option>
+              <option value="title">Alphabetical (A - Z)</option>
             </select>
           </div>
+
+          {(filterType !== 'all' || selectedDecade !== 'all' || sortBy !== 'highest') && (
+            <button
+              onClick={() => updateFilters('all', 'all', 'highest')}
+              className="btn-retro"
+              style={{ fontSize: '10px' }}
+            >
+              [ Reset Filters ]
+            </button>
+          )}
+        </div>
+
+        <div style={{ fontSize: '10px', color: '#666', marginTop: '4px', borderTop: '1px dotted #ccc', paddingTop: '3px' }}>
+          <strong>Showing:</strong> {filteredAndSortedReviews.length} matching review(s) &bull; Page 1 of 1
         </div>
       </div>
 
-      {/* Grid or Empty */}
+      {/* Reviews Listing */}
       {filteredAndSortedReviews.length === 0 ? (
         <EmptyState
-          title="No reviews match your filters"
-          message="Try resetting decade or category filters."
+          title="No Reviews Found"
+          message="No records matched your specific filter combination. Try selecting 'All Formats' or 'All Decades'."
           action={{
-            label: 'Clear Filters',
-            onClick: () => {
-              setFilterType('all');
-              setSelectedDecade('all');
-              setSortBy('highest');
-            },
+            label: 'Reset All Filters',
+            onClick: () => updateFilters('all', 'all', 'highest'),
           }}
         />
       ) : (
-        <div className="reviews-grid">
-          {filteredAndSortedReviews.map((r) => (
-            <ReviewCard key={r.id} review={r} />
+        <div className="retro-reviews-list">
+          {filteredAndSortedReviews.map((review) => (
+            <ReviewCard key={review.id} review={review} />
           ))}
         </div>
       )}

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Film } from 'lucide-react';
 
 interface PosterImageProps {
   src?: string;
   alt: string;
   className?: string;
   loading?: 'lazy' | 'eager';
+  style?: React.CSSProperties;
 }
 
 export const PosterImage: React.FC<PosterImageProps> = ({
@@ -13,28 +13,31 @@ export const PosterImage: React.FC<PosterImageProps> = ({
   alt,
   className = '',
   loading = 'lazy',
+  style,
 }) => {
   const [hasError, setHasError] = useState(!src);
-  const [isLoaded, setIsLoaded] = useState(false);
 
   if (!src || hasError) {
     return (
       <div
-        className={`${className} poster-fallback`}
+        className={`${className} retro-poster-fallback`}
         style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#161c2b',
-          color: '#64748b',
-          padding: '1rem',
+          backgroundColor: '#e0e0e0',
+          color: '#333333',
+          border: '1px solid #999999',
+          padding: '6px',
           textAlign: 'center',
-          height: '100%',
+          fontSize: '11px',
+          fontFamily: 'Arial, sans-serif',
+          minHeight: '80px',
         }}
       >
-        <Film size={32} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
-        <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{alt}</span>
+        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>[No Image]</div>
+        <div style={{ fontSize: '10px' }}>{alt}</div>
       </div>
     );
   }
@@ -45,11 +48,11 @@ export const PosterImage: React.FC<PosterImageProps> = ({
       alt={alt}
       className={className}
       loading={loading}
-      onLoad={() => setIsLoaded(true)}
       onError={() => setHasError(true)}
       style={{
-        opacity: isLoaded ? 1 : 0.4,
-        transition: 'opacity 0.3s ease, transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)',
+        border: '1px solid #000000',
+        display: 'block',
+        ...style,
       }}
     />
   );

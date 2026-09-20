@@ -5,38 +5,20 @@ interface LoadingSpinnerProps {
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-  message = 'Loading cinematic reviews...',
+  message = 'Loading movie archive records from database, please wait...',
 }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '5rem 1rem',
-        minHeight: '400px',
-      }}
-    >
-      <div
-        style={{
-          width: '54px',
-          height: '54px',
-          borderRadius: '50%',
-          border: '3px solid rgba(245, 158, 11, 0.15)',
-          borderTopColor: 'var(--color-accent-gold)',
-          animation: 'spin 0.8s linear infinite',
-          marginBottom: '1.25rem',
-        }}
-      />
-      <p style={{ color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.95rem' }}>
-        {message}
-      </p>
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+    <div className="retro-loading-box">
+      <div className="retro-loading-inner">
+        <div className="retro-hourglass">&#9203;</div>
+        <div className="retro-loading-text">
+          <strong>DATABASE ACCESS IN PROGRESS...</strong>
+          <p>{message}</p>
+          <div className="retro-loading-bar">
+            <div className="retro-loading-bar-fill" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

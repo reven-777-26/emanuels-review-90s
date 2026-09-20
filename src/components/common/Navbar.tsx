@@ -1,172 +1,165 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Menu, X, Home, Film, BarChart3, Shuffle, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchCategory, setSearchCategory] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 30);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Close mobile drawer when route changes
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
-
-  // Lock body scroll when mobile menu is open
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      let url = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+      if (searchCategory) {
+        url += `&type=${encodeURIComponent(searchCategory)}`;
+      }
+      navigate(url);
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [mobileMenuOpen]);
-
-  const handleRandomClick = () => {
-    setMobileMenuOpen(false);
-    navigate('/random');
   };
 
+  const todayString = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const searchParams = new URLSearchParams(location.search);
+  const typeParam = searchParams.get('type');
+  const sortParam = searchParams.get('sort');
+
+  const isHomeActive = location.pathname === '/';
+  const isFeatureFilmsActive = location.pathname === '/reviews' && typeParam === 'film';
+  const isTvSeriesActive = location.pathname === '/reviews' && typeParam === 'tv';
+  const isTopRatedActive = location.pathname === '/reviews' && sortParam === 'highest';
+  const isAllReviewsActive =
+    location.pathname === '/reviews' &&
+    !isFeatureFilmsActive &&
+    !isTvSeriesActive &&
+    !isTopRatedActive;
+  const isSearchActive = location.pathname === '/search';
+  const isStatsActive = location.pathname === '/stats';
+  const isRandomActive = location.pathname === '/random';
+
   return (
-    <>
-      <header className={`site-header ${scrolled ? 'is-scrolled' : ''} ${mobileMenuOpen ? 'menu-open' : ''}`}>
-        <div className="container header-inner">
-          {/* Brand Logo - Authentic Netflix Style */}
-          <Link to="/" className="header-brand" onClick={() => setMobileMenuOpen(false)}>
-            <img
-              src="/logo.png"
-              alt="Emanuel's Reviews Logo"
-              className="header-brand-icon"
-            />
-            <span className="header-brand-title">
-              <span className="title-white">EMANUEL'S</span>
-              <span className="title-red">REVIEWS</span>
-            </span>
+    <header className="retro-header">
+      {/* Top Utility Strip */}
+      <div className="retro-utility-bar">
+        <div className="retro-utility-left">
+          <span>Welcome to <strong>Emanuel's Reviews</strong>!</span>
+          <span className="retro-pipe">|</span>
+          <span className="retro-date-stamp">{todayString}</span>
+        </div>
+      </div>
+
+      {/* Main Banner: 1999 Amazon / Portal Table Layout */}
+      <div className="retro-banner-table">
+        <div className="retro-logo-cell">
+          <Link to="/" className="retro-logo-link">
+            <div className="retro-logo-title">
+              <span className="logo-emanuel">EMANUEL'S</span>{' '}
+              <span className="logo-reviews">REVIEWS</span>
+            </div>
+            <div className="retro-logo-sub">
+              THE WEB'S PREMIER FILM &amp; TV CRITICISM DATABASE &bull; EST. 1998
+            </div>
           </Link>
-
-          {/* Clean, Flat Navigation Links (No bulky pill borders) */}
-          <nav className="header-nav-menu" aria-label="Main Navigation">
-            <NavLink to="/" end className={({ isActive }) => `header-nav-link ${isActive ? 'active' : ''}`}>
-              Home
-            </NavLink>
-            <NavLink to="/reviews" end className={({ isActive }) => `header-nav-link ${isActive ? 'active' : ''}`}>
-              All Reviews
-            </NavLink>
-            <NavLink to="/stats" className={({ isActive }) => `header-nav-link ${isActive ? 'active' : ''}`}>
-              Stats
-            </NavLink>
-            <button
-              onClick={handleRandomClick}
-              className="header-nav-link"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }}
-              title="Random Review"
-            >
-              Random
-            </button>
-          </nav>
-
-          {/* Right Action Icons */}
-          <div className="header-actions">
-            <Link
-              to="/search"
-              className={`header-action-btn ${location.pathname === '/search' ? 'active' : ''}`}
-              title="Search"
-              aria-label="Search reviews"
-            >
-              <Search size={20} />
-            </Link>
-
-            {/* Mobile hamburger */}
-            <button
-              className="header-mobile-toggle"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
         </div>
-      </header>
 
-      {/* Mobile Drawer (rendered outside header to avoid backdrop-filter and height clipping) */}
-      {mobileMenuOpen && (
-        <div className="header-mobile-menu">
-          <div className="mobile-menu-links">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) => `mobile-menu-item ${isActive ? 'active' : ''}`}
-              onClick={() => setMobileMenuOpen(false)}
+        {/* Integrated Header Search Box (Amazon 1999 Style) */}
+        <div className="retro-search-cell">
+          <form onSubmit={handleSearchSubmit} className="retro-header-search-form">
+            <span className="search-label">SEARCH:</span>
+            <select
+              value={searchCategory}
+              onChange={(e) => setSearchCategory(e.target.value)}
+              className="retro-header-select"
             >
-              <div className="mobile-menu-item-left">
-                <Home size={20} className="mobile-menu-icon" />
-                <span>Home</span>
-              </div>
-              <ChevronRight size={16} className="mobile-menu-chevron" />
-            </NavLink>
-
-            <NavLink
-              to="/reviews"
-              end
-              className={({ isActive }) => `mobile-menu-item ${isActive ? 'active' : ''}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <div className="mobile-menu-item-left">
-                <Film size={20} className="mobile-menu-icon" />
-                <span>All Reviews</span>
-              </div>
-              <ChevronRight size={16} className="mobile-menu-chevron" />
-            </NavLink>
-
-            <NavLink
-              to="/stats"
-              className={({ isActive }) => `mobile-menu-item ${isActive ? 'active' : ''}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <div className="mobile-menu-item-left">
-                <BarChart3 size={20} className="mobile-menu-icon" />
-                <span>Statistics</span>
-              </div>
-              <ChevronRight size={16} className="mobile-menu-chevron" />
-            </NavLink>
-
-            <NavLink
-              to="/search"
-              className={({ isActive }) => `mobile-menu-item ${isActive ? 'active' : ''}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <div className="mobile-menu-item-left">
-                <Search size={20} className="mobile-menu-icon" />
-                <span>Search</span>
-              </div>
-              <ChevronRight size={16} className="mobile-menu-chevron" />
-            </NavLink>
-
-            <button
-              onClick={handleRandomClick}
-              className="mobile-menu-item"
-              style={{ width: '100%', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}
-            >
-              <div className="mobile-menu-item-left">
-                <Shuffle size={20} className="mobile-menu-icon" />
-                <span>Random Review</span>
-              </div>
-              <ChevronRight size={16} className="mobile-menu-chevron" />
+              <option value="">All Categories</option>
+              <option value="film">Feature Films</option>
+              <option value="tv">Television Series</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Title, Director, Actor..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="retro-header-input"
+            />
+            <button type="submit" className="btn-retro btn-retro-gold header-go-btn">
+              GO!
             </button>
-          </div>
+          </form>
         </div>
-      )}
-    </>
+      </div>
+
+      {/* 1999 Amazon Style Category Tabs */}
+      <nav className="retro-tabs-bar" aria-label="Main Navigation">
+        <Link
+          to="/"
+          className={`retro-tab ${isHomeActive ? 'active' : ''}`}
+        >
+          WELCOME
+        </Link>
+        <Link
+          to="/reviews"
+          className={`retro-tab ${isAllReviewsActive ? 'active' : ''}`}
+        >
+          ALL REVIEWS
+        </Link>
+        <Link
+          to="/reviews?type=film"
+          className={`retro-tab ${isFeatureFilmsActive ? 'active' : ''}`}
+        >
+          FEATURE FILMS
+        </Link>
+        <Link
+          to="/reviews?type=tv"
+          className={`retro-tab ${isTvSeriesActive ? 'active' : ''}`}
+        >
+          TV SERIES
+        </Link>
+        <Link
+          to="/reviews?sort=highest"
+          className={`retro-tab ${isTopRatedActive ? 'active' : ''}`}
+        >
+          TOP RATED
+        </Link>
+        <Link
+          to="/search"
+          className={`retro-tab ${isSearchActive ? 'active' : ''}`}
+        >
+          SEARCH ARCHIVE
+        </Link>
+        <Link
+          to="/stats"
+          className={`retro-tab ${isStatsActive ? 'active' : ''}`}
+        >
+          DATABASE STATS
+        </Link>
+        <Link
+          to="/random"
+          className={`retro-tab ${isRandomActive ? 'active' : ''}`}
+          onClick={() => {
+            if (location.pathname === '/random') {
+              window.dispatchEvent(new CustomEvent('pick-random-review'));
+            }
+          }}
+        >
+          RANDOM PICK
+        </Link>
+      </nav>
+
+      {/* Sub-Banner Ticker / Information Line */}
+      <div className="retro-subticker">
+        <strong>HOT TOPICS:</strong>{' '}
+        <Link to="/reviews/avatar">Avatar</Link> &bull;{' '}
+        <Link to="/reviews/obsession">Obsession</Link> &bull;{' '}
+        <Link to="/reviews/jumanji">Jumanji (1995)</Link> &bull;{' '}
+        <Link to="/reviews/wandavision">WandaVision</Link> &bull;{' '}
+        <Link to="/reviews/venom-the-last-dance">Venom: The Last Dance</Link>
+      </div>
+    </header>
   );
 };

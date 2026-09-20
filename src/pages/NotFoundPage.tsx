@@ -1,50 +1,43 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Film, ArrowLeft } from 'lucide-react';
 
 export const NotFoundPage: React.FC = () => {
   return (
-    <div
-      className="container"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '60vh',
-        textAlign: 'center',
-      }}
-    >
-      <div
-        style={{
-          width: '72px',
-          height: '72px',
-          borderRadius: '50%',
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--color-accent-gold)',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <Film size={36} />
+    <div style={{ padding: '15px 10px', textAlign: 'center' }}>
+      <div className="retro-section-header red" style={{ textAlign: 'left' }}>
+        <span className="retro-section-title">HTTP 404 - FILE OR REVIEW NOT LOCATED</span>
       </div>
 
-      <h1 style={{ fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>
-        404
-      </h1>
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem', color: '#fff' }}>
-        Scene Not Found
-      </h2>
-      <p style={{ color: 'var(--text-secondary)', maxWidth: '460px', marginBottom: '2rem' }}>
-        The review, page, or reel you're looking for doesn't exist or has been cut from Emanuel's archive.
-      </p>
+      <div className="box-yellow" style={{ textAlign: 'left', marginTop: '10px' }}>
+        <h2 style={{ fontSize: '15px', color: '#990000', margin: '0 0 6px 0' }}>
+          Error 404: The Specified Document Was Not Found
+        </h2>
+        <p style={{ fontSize: '12px', lineHeight: 1.4 }}>
+          The movie review, television series analysis, or catalog page you requested does not exist
+          in Emanuel's archive database or may have been relocated during an archive rebuild.
+        </p>
 
-      <Link to="/" className="btn btn-primary">
-        <ArrowLeft size={16} />
-        <span>Return Home</span>
-      </Link>
+        <div style={{ fontSize: '11px', marginTop: '8px' }}>
+          <strong>Suggested Troubleshooting Steps:</strong>
+          <ul style={{ margin: '4px 0 8px 18px', padding: 0 }}>
+            <li>Verify the spelling of the URL address in your browser.</li>
+            <li>Use the navigation tabs above or the directory on the left.</li>
+            <li>Consult the archive search engine to find the title by keyword.</li>
+          </ul>
+        </div>
+
+        <div style={{ marginTop: '12px' }}>
+          <Link to="/" className="btn-retro btn-retro-navy">
+            &lt;&lt; Return to Home Page
+          </Link>{' '}
+          <Link to="/reviews" className="btn-retro">
+            Browse All Reviews
+          </Link>{' '}
+          <Link to="/search" className="btn-retro">
+            Search Archive
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };

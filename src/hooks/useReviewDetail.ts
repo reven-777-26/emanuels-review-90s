@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { reviewsApi } from '../api/reviews';
 import type { ReviewDetail } from '../types/review';
+import { simulateVintageLag } from '../utils/vintageLag';
 
 const reviewDetailCache = new Map<string, ReviewDetail>();
 
 export function useReviewDetail(id?: string) {
-  const [review, setReview] = useState<ReviewDetail | null>(
-    id ? reviewDetailCache.get(id) || null : null
-  );
-  const [loading, setLoading] = useState<boolean>(Boolean(id && !reviewDetailCache.has(id)));
+  const [review, setReview] = useState<ReviewDetail | null>(null);
+  const [loading, setLoading] = useState<boolean>(Boolean(id));
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,16 +18,23 @@ export function useReviewDetail(id?: string) {
       return;
     }
 
-    if (reviewDetailCache.has(id)) {
-      setReview(reviewDetailCache.get(id)!);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
     let isMounted = true;
     setLoading(true);
     setError(null);
+
+    // If already in memory cache, simulate vintage latency before revealing
+    if (reviewDetailCache.has(id)) {
+      const cached = reviewDetailCache.get(id)!;
+      simulateVintageLag().then(() => {
+        if (isMounted) {
+          setReview(cached);
+          setLoading(false);
+        }
+      });
+      return () => {
+        isMounted = false;
+      };
+    }
 
     reviewsApi
       .getReviewById(id)

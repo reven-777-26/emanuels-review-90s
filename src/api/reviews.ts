@@ -1,4 +1,5 @@
 import type { ReviewsResponse, ReviewDetail, SearchResponse } from '../types/review';
+import { simulateVintageLag } from '../utils/vintageLag';
 
 // Base URL routed through Vite dev proxy to bypass browser CORS
 const API_BASE = 'https://api.emanuels.review';
@@ -14,14 +15,18 @@ class APIError extends Error {
 
 async function fetchJSON<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
+  const delayPromise = simulateVintageLag();
   try {
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        Accept: 'application/json',
-        ...(options?.headers || {}),
-      },
-    });
+    const [response] = await Promise.all([
+      fetch(url, {
+        ...options,
+        headers: {
+          Accept: 'application/json',
+          ...(options?.headers || {}),
+        },
+      }),
+      delayPromise,
+    ]);
 
     if (!response.ok) {
       let errorMessage = `HTTP error ${response.status}: ${response.statusText}`;

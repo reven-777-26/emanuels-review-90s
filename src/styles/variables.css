@@ -1,57 +1,53 @@
-/* Custom properties for Emanuel's Reviews */
+/* Authentic Late-1990s Web Properties (1995-1999) */
 :root {
-  /* Backgrounds & Surfaces */
-  --bg-canvas: #090b10;
-  --bg-surface: #10141e;
-  --bg-surface-elevated: #161c2b;
-  --bg-surface-card: #141824;
-  --bg-glass: rgba(16, 20, 30, 0.75);
-  --bg-glass-card: rgba(22, 28, 43, 0.65);
-  --bg-hover: rgba(255, 255, 255, 0.05);
+  /* Document & Surface Colors */
+  --bg-desktop: #e8e8e8;
+  --bg-document: #ffffff;
+  --bg-banner: #003366;
+  --bg-banner-dark: #002244;
+  --bg-banner-light: #004d99;
+  --bg-tab: #003366;
+  --bg-tab-active: #ffffcc;
+  --bg-panel-yellow: #ffffcc;
+  --bg-panel-cream: #fffde6;
+  --bg-panel-gray: #f4f4f4;
+  --bg-panel-alt: #ece9d8;
+  --bg-table-header: #003366;
+  --bg-table-zebra: #f8f9fa;
 
-  /* Primary Brand & Accents */
-  --color-accent-gold: #f59e0b;
-  --color-accent-amber: #fbbf24;
-  --color-accent-red: #ef4444;
-  --color-accent-blue: #3b82f6;
-  --color-accent-purple: #8b5cf6;
-  --color-accent-emerald: #10b981;
+  /* Typography Colors */
+  --text-dark: #000000;
+  --text-body: #111111;
+  --text-secondary: #333333;
+  --text-muted: #666666;
+  --text-light: #ffffff;
+  --text-red: #990000;
+  --text-burgundy: #800000;
+  --text-gold: #b8860b;
 
-  /* Text & Contrast */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-disabled: #475569;
+  /* Classic 1990s Hyperlinks */
+  --link-color: #0000cc;
+  --link-visited: #551a8b;
+  --link-hover: #cc0000;
+  --link-active: #ff0000;
 
   /* Borders & Dividers */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(245, 158, 11, 0.5);
-  --border-gold: rgba(245, 158, 11, 0.25);
+  --border-dark: #003366;
+  --border-mid: #808080;
+  --border-gray: #999999;
+  --border-light: #cccccc;
+  --border-yellow: #cc9933;
 
-  /* Typography */
-  --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  /* Typography Families */
+  --font-serif: "Times New Roman", Times, Georgia, serif;
+  --font-sans: Arial, Helvetica, Verdana, sans-serif;
+  --font-nav: Verdana, Arial, Helvetica, sans-serif;
+  --font-mono: "Courier New", Courier, monospace;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.65);
-  --shadow-gold: 0 0 30px rgba(245, 158, 11, 0.15);
+  /* Layout Constraints (800x600 Display Optimized) */
+  --site-width: 790px;
+  --sidebar-width: 175px;
 
-  /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-pill: 9999px;
-
-  /* Layout */
-  --max-width: 1240px;
-  --header-height: 84px;
-
-  /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-bounce: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Zero modern radii */
+  --radius-none: 0px;
 }
