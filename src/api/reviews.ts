@@ -2,7 +2,7 @@ import type { ReviewsResponse, ReviewDetail, SearchResponse } from '../types/rev
 import { simulateVintageLag } from '../utils/vintageLag';
 
 // Base URL routed through Vite dev proxy to bypass browser CORS
-const API_BASE = 'https://api.emanuels.review';
+const API_BASE = 'https://api.emanuels.review/v1';
 
 class APIError extends Error {
   status?: number;
